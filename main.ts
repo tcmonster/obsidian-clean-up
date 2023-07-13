@@ -1,110 +1,69 @@
-import { App, Editor, Menu, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import markdownToTxt from 'markdown-to-txt';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+interface CleanUpSettings {
+	isCleanHTML: boolean;
+	isCleanMarkdown: boolean;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: CleanUpSettings = {
+	isCleanHTML: true,
+	isCleanMarkdown: false
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class CleanUp extends Plugin {
+	settings: CleanUpSettings;
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
+		// Creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('eraser', 'Clean Up', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			// new Notice('Hello, TC!');
 			const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (markdownView) {
-				// 获取编辑器实例
 				const editor = markdownView.editor;
-				// 获取所选内容
-				const selectedContent = editor.getSelection();
-				console.log(selectedContent);
-				// 清除所选内容的 html 标签
-				// const cleanedContent = selectedContent.replace(/<[^>]+>/g, '');
-				const cleanedContent = markdownToTxt(selectedContent);
-				editor.replaceSelection(cleanedContent);
-				console.log(cleanedContent);
-
-
+				this.cleanSelectContent(editor);
 			}
 		});
-		// Perform additional things with the ribbon
-		// ribbonIconEl.addClass('my-plugin-ribbon-class');
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		// const statusBarItemEl = this.addStatusBarItem();
-		// statusBarItemEl.setText('Status Bar Text');
-
-		// This adds a command that gets the selected content
-		// this.addCommand({
-		// 	id: 'get-selected-content',
-		// 	name: 'Get selected content',
-		// 	editorCallback: (editor: Editor, view: MarkdownView) => {
-		// 		const selectedContent = editor.getSelection();
-		// 		console.log(selectedContent);
-		// 	}
-		// });
-
-		// This adds a simple command that can be triggered anywhere
-		// this.addCommand({
-		// 	id: 'open-sample-modal-simple',
-		// 	name: 'Open sample modal (simple)',
-		// 	callback: () => {
-		// 		new SampleModal(this.app).open();
-		// 	}
-		// });
-		// This adds an editor command that can perform some operation on the current editor instance
-		// this.addCommand({
-		// 	id: 'sample-editor-command',
-		// 	name: 'Sample editor command',
-		// 	editorCallback: (editor: Editor, view: MarkdownView) => {
-		// 		console.log(editor.getSelection());
-		// 		editor.replaceSelection('Sample Editor Command');
-		// 	}
-		// });
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		// this.addCommand({
-		// 	id: 'open-sample-modal-complex',
-		// 	name: 'Open sample modal (complex)',
-		// 	checkCallback: (checking: boolean) => {
-		// 		// Conditions to check
-		// 		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		// 		if (markdownView) {
-		// 			// If checking is true, we're simply "checking" if the command can be run.
-		// 			// If checking is false, then we want to actually perform the operation.
-		// 			if (!checking) {
-		// 				new SampleModal(this.app).open();
-		// 			}
-
-		// 			// This command will only show up in Command Palette when the check function returns true
-		// 			return true;
-		// 		}
-		// 	}
-		// });
+		//  adds an editor command that can perform some operation on the current editor instance
+		this.addCommand({
+			id: 'clean-up-selection',
+			name: 'Clean Up Selection',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				this.cleanSelectContent(editor);
+			}
+		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new CleanUpSettingTab(this.app, this));
 
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-		// 	console.log('click', evt);
-		// });
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
 	onunload() {
+
+	}
+
+	cleanSelectContent(editor: Editor) {
+		// Get plugin settings
+		const isCleanHTML = this.settings.isCleanHTML;
+		const isCleanMarkdown = this.settings.isCleanMarkdown;
+
+		// Get the selected content
+		const selectedContent = editor.getSelection();
+		const selectedContentLines = selectedContent.split('\n').length;
+		let cleanedContent = selectedContent;
+
+		if (isCleanHTML) {
+			cleanedContent = selectedContent.replace(/<[^>]+>/g, '');
+		}
+
+		if (isCleanMarkdown) {
+			cleanedContent = markdownToTxt(selectedContent);
+		}
+
+		editor.replaceSelection(cleanedContent);
+		new Notice(selectedContentLines + ' rows cleaned');
 
 	}
 
@@ -117,26 +76,11 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
 
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.setText('Woah!');
-	}
+class CleanUpSettingTab extends PluginSettingTab {
+	plugin: CleanUp;
 
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: CleanUp) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -146,18 +90,32 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
+		containerEl.createEl('h2', { text: 'Settings for cleanable content.' });
 
+		//Switch button for clean HTML
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
+			.setName('Clean HTML')
+			.setDesc('Will clear all HTML tags if enabled')
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.isCleanHTML)
+					.onChange(async (value) => {
+						this.plugin.settings.isCleanHTML = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		//Switch button for clean Markdown
+		new Setting(containerEl)
+			.setName('Clean Markdown')
+			.setDesc('Will clear all Markdown formats if enabled')
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.isCleanMarkdown)
+					.onChange(async (value) => {
+						this.plugin.settings.isCleanMarkdown = value;
+						await this.plugin.saveSettings();
+					});
+			});
 	}
 }

@@ -3,9 +3,8 @@
 	"name": "Clean Up",
 	"version": "0.1.0",
 	"minAppVersion": "1.0.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
+	"description": "Quickly clear all HTML tags and Markdown formats of the selected content.",
 	"author": "TC",
 	"authorUrl": "https://imtc.top",
-	"fundingUrl": "none",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

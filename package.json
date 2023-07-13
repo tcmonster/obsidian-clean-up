@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-clean-up",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"version": "0.1.0",
+	"description": "Quickly clear all HTML tags and Markdown formats of the selected content.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
