@@ -1,4 +1,5 @@
 import { App, Editor, Menu, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import markdownToTxt from 'markdown-to-txt';
 
 // Remember to rename these classes and interfaces!
 
@@ -28,8 +29,8 @@ export default class MyPlugin extends Plugin {
 				const selectedContent = editor.getSelection();
 				console.log(selectedContent);
 				// 清除所选内容的 html 标签
-				const cleanedContent = selectedContent.replace(/<[^>]+>/g, '');
-				// const cleanedContent = selectedContent.replace(/[*_~`]/g, '');
+				// const cleanedContent = selectedContent.replace(/<[^>]+>/g, '');
+				const cleanedContent = markdownToTxt(selectedContent);
 				editor.replaceSelection(cleanedContent);
 				console.log(cleanedContent);
 
