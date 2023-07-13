@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-clean-up",
 	"name": "Clean Up",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"minAppVersion": "1.0.0",
 	"description": "Quickly clear all HTML tags and Markdown formats of the selected content.",
 	"author": "TC",
