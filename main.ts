@@ -20,7 +20,14 @@ export default class MyPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('eraser', 'Clean Up', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			// new Notice('Hello, TC!');
-			
+			const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+			if (markdownView) {
+				// 获取编辑器实例
+				const editor = markdownView.editor;
+				// 获取所选内容
+				const selectedContent = editor.getSelection();
+				console.log(selectedContent);
+			}
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -28,6 +35,16 @@ export default class MyPlugin extends Plugin {
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
 		statusBarItemEl.setText('Status Bar Text');
+
+		// This adds a command that gets the selected content
+		this.addCommand({
+			id: 'get-selected-content',
+			name: 'Get selected content',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				const selectedContent = editor.getSelection();
+				console.log(selectedContent);
+			}
+		});
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
